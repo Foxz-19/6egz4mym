@@ -8,7 +8,7 @@ The project satisfies the Shower Thought Timer brief and remains within the sour
 
 | Check | Result |
 | --- | --- |
-| Raw source size excluding Markdown/text | **24,603 bytes**; below the 25 KB cap with 397 bytes remaining |
+| Raw source size excluding Markdown/text | **24,664 bytes**; below the 25 KB cap with 336 bytes remaining |
 | Strict type checking | `npx -y -p typescript tsc --project tsconfig.json` passes |
 | JavaScript syntax | `node --check app.js` passes |
 | Unit test suite | `node --test tests.mjs` passes |
@@ -80,6 +80,12 @@ The project satisfies the Shower Thought Timer brief and remains within the sour
 
 - Escape dismisses delete confirmation without deleting the thought.
 - The skip link becomes visible when keyboard-focused.
+
+## Very-deep storage-boundary addendum
+
+### Defect found and fixed
+
+**Unbounded persisted IDs.** Stored thought IDs were safely escaped but only checked as strings. A manually corrupted archive could still inject an arbitrarily long ID into the delete control’s data and accessible-label attributes. Storage validation now rejects IDs longer than 100 characters; the unit test isolates and verifies this rejection.
 
 ## Rubric assessment
 

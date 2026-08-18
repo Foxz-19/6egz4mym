@@ -17,7 +17,7 @@ assert.equal(isLastMinute(60), true);
 assert.equal(isLastMinute(59), true);
 assert.equal(isLastMinute(0), false);
 assert.equal(elapsed(makeTimer(8)), 0);
-memory.set('mist-shower-thoughts-v1', JSON.stringify({ version: 1, thoughts: [{ id: 'valid', text: 'Keep this', createdAt: '2026-01-01T00:00:00.000Z', elapsedSeconds: 1 }, { id: 'bad', text: '', createdAt: 'nope', elapsedSeconds: -1 }] }));
+memory.set('mist-shower-thoughts-v1', JSON.stringify({ version: 1, thoughts: [{ id: 'valid', text: 'Keep this', createdAt: '2026-01-01T00:00:00.000Z', elapsedSeconds: 1 }, { id: 'x'.repeat(101), text: 'Valid', createdAt: '2026-01-01T00:00:00.000Z', elapsedSeconds: 1 }] }));
 assert.equal(loadThoughts().thoughts.length, 1);
 assert.match(loadThoughts().warning, /invalid saved thoughts/);
 globalThis.localStorage.setItem = () => { throw new Error('blocked'); };

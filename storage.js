@@ -19,5 +19,5 @@ export function loadThoughts() {
 function validThought(value) {
   if (!value || typeof value !== 'object') return false;
   const record = /** @type {Record<string, unknown>} */ (value);
-  return typeof record.id === 'string' && typeof record.text === 'string' && record.text.length <= 400 && record.text.trim() !== '' && typeof record.createdAt === 'string' && !Number.isNaN(Date.parse(record.createdAt)) && typeof record.elapsedSeconds === 'number' && Number.isFinite(record.elapsedSeconds) && record.elapsedSeconds >= 0;
+  return typeof record.id === 'string' && record.id.length <= 100 && typeof record.text === 'string' && record.text.length <= 400 && record.text.trim() !== '' && typeof record.createdAt === 'string' && !Number.isNaN(Date.parse(record.createdAt)) && typeof record.elapsedSeconds === 'number' && Number.isFinite(record.elapsedSeconds) && record.elapsedSeconds >= 0;
 }
