@@ -20,7 +20,7 @@ The project satisfies the Shower Thought Timer brief and remains within the sour
 | --- | --- |
 | Large, settable countdown | 5/8/10-minute accessible toggle buttons drive `timer.js`; browser test changes a running timer to 5 minutes through a confirmation dialog. |
 | Active shower mode | Start/pause button, large tabular timer, continuously available textarea, and state-specific helper text. |
-| Red final-minute warning | `renderTimer()` adds `last-minute` at 60 seconds or below while running; CSS applies the danger token. Unit coverage verifies the 61→60 threshold. |
+| Red final-minute warning | `renderTimer()` adds `last-minute` for any non-zero 1–60-second state, including pause; CSS applies the danger token. Unit coverage verifies the threshold. |
 | Thought capture | Required textarea trims whitespace, limits input to 400 characters, and reports an inline accessible validation message. |
 | Date and elapsed-shower stamp | Every saved entry stores ISO date/time and elapsed seconds; `ui.js` formats it with `Intl.DateTimeFormat`. |
 | Delete individual entries | Each entry has a labelled delete action and a confirmation dialog. |
