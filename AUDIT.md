@@ -1,36 +1,105 @@
-# Huefold Audit Notes
+# Shower Thought Timer — Deep Audit (Resolved)
 
-## Resolved issues
+## Scope and constraint
 
-1. **Palette-strip label contrast can fail for user-selected colors**
-   - Location: `styles.css`, `.strip-item span`
-   - Fixed: the renderer now uses relative luminance to select black or white text, guaranteeing at least 4.5:1 contrast against every valid hex swatch.
+- Reviewed against `brief.txt` and `prompt.md`.
+- Raw source, excluding Markdown and text: **22,052 bytes** (under the 25 KB cap).
+- The app’s supplied timer unit test passes.
+- The Playwright flow previously passed for start, save, reload persistence, confirmation, and deletion. A later repeat was blocked before page load by an intermittent temporary-server `ERR_EMPTY_RESPONSE`; this is a test-server reliability issue, not a demonstrated application error.
 
-2. **No skip link for keyboard users**
-   - Location: `index.html`
-   - Fixed: a visible-on-focus skip link now targets the primary `main` landmark.
+## Resolved functional findings
 
-3. **Decorative brand mark is not explicitly hidden from assistive technology**
-   - Location: `index.html`, `.brand-mark`
-   - Fixed: the decorative span is now marked `aria-hidden="true"`.
+### P1 — Delete can appear successful when localStorage save fails
 
-4. **Storage access can fail before a read or write method is called**
-   - Location: `js/state.js`, `js/app.js`
-   - Fixed: access to `localStorage` is guarded; unavailable storage starts an in-memory palette and shows an explanatory notice instead of preventing application startup.
+**Location:** `app.js`, delete-dialog `close` handler and `persist()`.
 
-5. **Long unbroken labels can overflow the swatch row on mobile**
-   - Location: `js/ui.js`, `fixes.css`
-   - Fixed: the swatch information column can shrink and labels now wrap at arbitrary characters when necessary.
+The thought is removed from the in-memory `thoughts` array and the list is rendered before `saveThoughts()` confirms that localStorage accepted the write. If storage is full, disabled, or otherwise throws, the screen no longer shows the thought, but a page refresh restores it from localStorage. The inline error does explain that saving failed, but it does not restore the visible list.
 
-## Maintainability opportunities
+**Fixed:** `commitThoughts()` now writes the proposed collection first and only updates in-memory state and the rendered list after a successful localStorage write.
 
-1. **Compressed source reduces readability**
-   - Locations: `styles.css`, `js/app.js`, `js/state.js`, `js/ui.js`
-   - The implementation is intentionally compact for the 25 KB source cap, but the one-line formatting makes review and future edits more error-prone.
+### P2 — Invalid individual stored records are discarded silently
 
-## Verified behavior
+**Location:** `storage.js`, `loadThoughts()`.
 
-- Add, validation, eight-swatch cap, move controls, delete confirmation, mini summary strip, and refresh persistence work.
-- Empty state, corrupt saved data, failed storage writes, Escape cancellation/focus restoration, and mobile overflow behavior were browser-tested.
-- `npm test` and `npm run typecheck` pass. Rendering is covered by direct unit tests, in addition to browser smoke testing.
-- Current raw source is 22,419 bytes excluding Markdown, text, images, and installed dependencies; this is below the 25 KB limit.
+The loader correctly rejects a completely malformed archive and shows a recovery message. However, when the archive object is valid but contains a malformed individual thought, `filter(validThought)` silently drops that thought without telling the user.
+
+**Fixed:** the loader compares record counts, returns a recovery warning, and the app keeps that message visible in the capture-status area as well as announcing it by toast.
+
+### P3 — No compatibility fallback for `crypto.randomUUID()`
+
+**Location:** `app.js`, submit handler.
+
+Modern browsers support this API, but older browsers or constrained webviews may throw and prevent saving a valid thought.
+
+**Fixed:** `createId()` uses `crypto.randomUUID()` when available and a timestamp/random fallback otherwise.
+
+## Resolved accessibility and UX findings
+
+### P2 — Buttons and the brand link lack explicit `:focus-visible` styling
+
+**Location:** `styles.css`.
+
+The textarea has a visible focus treatment, but presets, primary actions, delete controls, dialog actions, and the brand link rely on browser defaults. This is weaker for keyboard users and may be hard to see against the custom visual system.
+
+**Fixed:** explicit high-contrast `:focus-visible` outlines now cover links, buttons, and the textarea.
+
+### P3 — No skip link to the primary interaction
+
+**Location:** `index.html`.
+
+The page is short, but keyboard and screen-reader users must still traverse the header before reaching the timer and capture form.
+
+**Fixed:** an on-focus “Skip to shower timer” link now targets the primary workspace.
+
+### P3 — Long user-created thoughts need more defensive wrapping
+
+**Location:** `styles.css`, `.thought-list li > p`.
+
+Normal prose is handled well, but one very long unbroken string can overflow its container because there is no `overflow-wrap:anywhere` or equivalent.
+
+**Fixed:** saved thought text uses `overflow-wrap:anywhere`.
+
+### P3 — Preset-change confirmation uses native `confirm()`
+
+**Location:** `app.js`, duration preset click handler.
+
+The native prompt is functional, but it is visually inconsistent with the polished delete dialog and offers limited control over focus/copy across browsers.
+
+**Fixed:** running-timer duration changes now open a custom dialog with “Keep current timer” and “Change duration” actions.
+
+## Resolved testing coverage
+
+### P2 — Core edge cases are not automated
+
+**Location:** `tests.mjs`, `browser_test.py`.
+
+Existing tests cover basic timer math plus the primary save/persist/delete path. They do not cover:
+
+- the 60-second red timer state;
+- pause/resume and changing presets while running;
+- blank or whitespace-only submission;
+- corrupt localStorage recovery;
+- localStorage read/write failures;
+- failed deletion rollback;
+- mobile layout and keyboard focus;
+- reduced-motion behavior.
+
+**Fixed:** unit coverage now checks the 60-second threshold, filtered invalid storage data, and write failures. The browser flow checks blank validation, reduced-motion CSS, custom duration confirmation, persistence, successful deletion, and a narrow mobile viewport. Transactional deletion is implemented in `commitThoughts()`; its storage-failure primitive is covered by the unit test without globally overriding browser storage during automation.
+
+## Resolved maintainability findings
+
+### P3 — `app.js` is compact at the expense of readability
+
+**Location:** `app.js`.
+
+The project has good module boundaries, but application event handlers and DOM construction are compressed into long single lines. That makes future changes, debugging, and code review more error-prone.
+
+**Fixed:** `app.js` now uses named event handlers and lifecycle functions; thought-row rendering and display formatting are extracted to `ui.js`.
+
+### P3 — Type declarations are not enforced by tooling
+
+**Location:** `types.d.ts`.
+
+Explicit interfaces are present, but there is no TypeScript configuration or type-check command. Runtime validation only verifies primitive fields; it does not validate timestamp validity, text length, or non-negative elapsed time.
+
+**Fixed:** `tsconfig.json` enables strict `checkJs` for JS and declaration files, and storage validation now verifies text, dates, and elapsed-time boundaries. The current workspace does not include the `tsc` executable, so the configuration should be run in CI or an editor with TypeScript installed.

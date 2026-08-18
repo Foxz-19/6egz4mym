@@ -3,68 +3,45 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#273247" />
-  <title>Huefold — Closet color palette builder</title>
+  <meta name="theme-color" content="#dcebed" />
+  <title>Mist — Shower Thought Timer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
-  <link rel="stylesheet" href="fixes.css" />
 </head>
 <body>
-  <a class="skip-link" href="#main-content">Skip to palette builder</a>
-  <main class="shell" id="main-content" tabindex="-1">
-    <header class="masthead">
-      <a class="brand" href="#top" aria-label="Huefold home"><span class="brand-mark" aria-hidden="true"></span>HUEFOLD</a>
-      <p class="count" id="count" aria-live="polite">0 of 8 pieces</p>
-    </header>
-
-    <section class="intro" id="top" aria-labelledby="page-title">
-      <p class="eyebrow">A considered closet, in color</p>
-      <h1 id="page-title">Build the palette<br />you actually wear.</h1>
-      <p>Capture the tones that make getting dressed feel effortless.</p>
+  <a class="skip-link" href="#top">Skip to shower timer</a>
+  <main class="shell">
+    <header><a class="brand" href="#top" aria-label="Mist home"><span aria-hidden="true">◌</span> mist</a><p>SHOWER THOUGHT ARCHIVE</p></header>
+    <section class="workspace" id="top" aria-labelledby="timer-title">
+      <div class="timer-side">
+        <p class="eyebrow">IN THE SHOWER</p>
+        <h1 id="timer-title">Hold on to<br><em>the good ones.</em></h1>
+        <div class="presets" role="group" aria-label="Set shower duration">
+          <button type="button" data-minutes="5">5 min</button>
+          <button type="button" data-minutes="8" aria-pressed="true">8 min</button>
+          <button type="button" data-minutes="10">10 min</button>
+        </div>
+        <div class="clock" aria-live="off"><span id="minutes">08</span><i>:</i><span id="seconds">00</span></div>
+        <p class="timer-note" id="timerNote">Choose a length, then begin.</p>
+        <button class="primary" id="timerAction" type="button">Start the water <span aria-hidden="true">→</span></button>
+      </div>
+      <form class="capture" id="thoughtForm">
+        <label for="thought">A thought surfaces…</label>
+        <textarea id="thought" name="thought" maxlength="400" autocomplete="off" placeholder="What if shower curtains were just very private flags…" required></textarea>
+        <div class="capture-footer"><span id="captureStatus" aria-live="polite">Thoughts are stamped when saved.</span><button type="submit">Save thought <span aria-hidden="true">↗</span></button></div>
+      </form>
     </section>
-
-    <div class="workspace">
-      <aside class="composer" aria-labelledby="composer-title">
-        <div class="composer-inner">
-          <p class="section-kicker">Add a piece</p>
-          <h2 id="composer-title">Name the color.</h2>
-          <form id="swatch-form" novalidate>
-            <label class="color-control" for="color">Choose a color <input id="color" name="color" type="color" value="#273247" /></label>
-            <label for="label">Piece label</label>
-            <input id="label" name="label" type="text" maxlength="40" autocomplete="off" placeholder="e.g. Navy blazer" required />
-            <p class="field-note">Add up to eight wardrobe essentials.</p>
-            <p class="form-error" id="form-error" role="alert" hidden></p>
-            <button class="add-button" id="add-button" type="submit"><span>+</span> Add to palette</button>
-          </form>
-        </div>
-      </aside>
-
-      <section class="collection" aria-labelledby="collection-title">
-        <div class="section-heading">
-          <div><p class="section-kicker">Your edit</p><h2 id="collection-title">Current palette</h2></div>
-          <p class="collection-hint">Order from foundation to accent.</p>
-        </div>
-        <div id="swatch-list" class="swatch-list" aria-live="polite" aria-label="Palette pieces"></div>
-      </section>
-    </div>
-
-    <section class="summary" aria-labelledby="summary-title">
-      <div><p class="section-kicker">The full picture</p><h2 id="summary-title">Palette strip</h2></div>
-      <div id="palette-strip" class="palette-strip" aria-label="Read-only color palette summary"></div>
+    <section class="archive" aria-labelledby="archive-title">
+      <div class="archive-head"><div><p class="eyebrow">SAVED IN THE STEAM</p><h2 id="archive-title">Your thought log</h2></div><p id="thoughtCount">0 thoughts kept</p></div>
+      <ol id="thoughtList" class="thought-list" aria-live="polite"></ol>
+      <p class="empty" id="emptyState">Nothing collected yet. Your next bright idea has a home here.</p>
     </section>
   </main>
-
-  <div class="startup" id="startup" role="status">Loading saved palette…</div>
-  <div class="notice" id="notice" role="status" aria-live="polite" hidden></div>
-  <dialog id="delete-dialog" aria-labelledby="delete-title">
-    <form method="dialog">
-      <p class="section-kicker">Remove piece</p><h2 id="delete-title">Remove this swatch?</h2>
-      <p id="delete-copy">This cannot be undone.</p>
-      <div class="dialog-actions"><button value="cancel" class="quiet-button">Keep it</button><button value="confirm" class="danger-button">Remove swatch</button></div>
-    </form>
-  </dialog>
-  <script type="module" src="js/app.js"></script>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <dialog id="deleteDialog" aria-labelledby="deleteTitle"><h2 id="deleteTitle">Let this thought go?</h2><p>This will permanently remove it from your local archive.</p><form method="dialog"><button value="cancel">Keep it</button><button class="danger" value="confirm">Delete thought</button></form></dialog>
+  <dialog id="durationDialog" aria-labelledby="durationTitle"><h2 id="durationTitle">Change shower length?</h2><p>This will stop the current timer and reset it to the new duration.</p><form method="dialog"><button value="cancel">Keep current timer</button><button class="confirm" value="confirm">Change duration</button></form></dialog>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
