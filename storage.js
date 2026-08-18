@@ -3,7 +3,7 @@ const KEY = 'mist-shower-thoughts-v1';
 /** @param {ShowerThought[]} thoughts @returns {{ok:boolean,error?:string}} */
 export function saveThoughts(thoughts) {
   try { localStorage.setItem(KEY, JSON.stringify({ version: 1, thoughts })); return { ok: true }; }
-  catch { return { ok: false, error: 'Your browser could not save this change. Your thought is still on screen.' }; }
+  catch { return { ok: false, error: 'Your browser could not save this change. Try again or free storage space.' }; }
 }
 /** @returns {{thoughts:ShowerThought[],error?:string,warning?:string}} */
 export function loadThoughts() {
@@ -17,5 +17,7 @@ export function loadThoughts() {
 }
 /** @param {unknown} value @returns {value is ShowerThought} */
 function validThought(value) {
-  return !!value && typeof value === 'object' && typeof value.id === 'string' && typeof value.text === 'string' && value.text.length <= 400 && value.text.trim() !== '' && typeof value.createdAt === 'string' && !Number.isNaN(Date.parse(value.createdAt)) && typeof value.elapsedSeconds === 'number' && Number.isFinite(value.elapsedSeconds) && value.elapsedSeconds >= 0;
+  if (!value || typeof value !== 'object') return false;
+  const record = /** @type {Record<string, unknown>} */ (value);
+  return typeof record.id === 'string' && typeof record.text === 'string' && record.text.length <= 400 && record.text.trim() !== '' && typeof record.createdAt === 'string' && !Number.isNaN(Date.parse(record.createdAt)) && typeof record.elapsedSeconds === 'number' && Number.isFinite(record.elapsedSeconds) && record.elapsedSeconds >= 0;
 }
