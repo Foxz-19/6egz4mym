@@ -8,7 +8,7 @@ The project satisfies the Shower Thought Timer brief and remains within the sour
 
 | Check | Result |
 | --- | --- |
-| Raw source size excluding Markdown/text | **23,263 bytes**; safely below 25 KB |
+| Raw source size excluding Markdown/text | **24,603 bytes**; below the 25 KB cap with 397 bytes remaining |
 | Strict type checking | `npx -y -p typescript tsc --project tsconfig.json` passes |
 | JavaScript syntax | `node --check app.js` passes |
 | Unit test suite | `node --test tests.mjs` passes |
@@ -55,6 +55,31 @@ The project satisfies the Shower Thought Timer brief and remains within the sour
 
 - The archive renders every saved item. This is appropriate for a small personal thought log, but virtualisation/content visibility could be added if the product later targets hundreds of entries.
 - The project has no dependency manifest because it deliberately uses native browser APIs. Type checking is reproducible with `npx -y -p typescript tsc --project tsconfig.json`.
+
+## Final recheck addendum
+
+### New defects found and fixed
+
+1. **Countdown drift after background throttling or a delayed event loop.** The original implementation subtracted one second for every `setInterval` callback. A paused/throttled tab therefore showed more remaining time than elapsed in real life. The timer now sets a real-time deadline and derives remaining seconds from `Date.now()` on every update; a unit test covers both an in-progress and completed deadline.
+2. **Last-minute warning disappeared when paused.** The red warning previously depended on `timer.running`, so a user who paused at `00:59` saw the important warning reset to the standard colour. The UI now remains red whenever a non-zero remaining time is at or below 60 seconds.
+
+### Final evidence after fixes
+
+- Timer behavior remains deterministic for normal ticks and deadline reconciliation.
+- Thought elapsed time remains correct when the timer is paused because pausing reconciles to the real-time deadline first.
+- The source-size cap remains checked after every implementation change.
+
+## Deep edge-case addendum
+
+### New defects found and fixed
+
+1. **Saving while an interval callback was delayed could stamp the thought up to one stale tick behind.** Although the display reconciled at the next callback, the submit handler used the last rendered timer state. The submit path now synchronises against the real-time deadline immediately before calculating elapsed time.
+2. **The final-minute rule was embedded in the view rather than isolated and directly testable.** `isLastMinute()` now owns the non-zero 1–60 second rule, and unit tests cover 60, 59, and 0 seconds.
+
+### Additional browser assertions
+
+- Escape dismisses delete confirmation without deleting the thought.
+- The skip link becomes visible when keyboard-focused.
 
 ## Rubric assessment
 

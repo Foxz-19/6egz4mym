@@ -1,4 +1,4 @@
-import { elapsed, formatTime, makeTimer, tick } from './timer.js';
+import { elapsed, formatTime, isLastMinute, makeTimer, remainingAt } from './timer.js';
 import { loadThoughts, saveThoughts } from './storage.js';
 import { createThoughtRow } from './ui.js';
 
@@ -29,6 +29,7 @@ const els = {
 const durationButtons = document.querySelectorAll('[data-minutes]');
 let timer = makeTimer(8);
 let interval = 0;
+let deadline = 0;
 let deletingId = '';
 let pendingMinutes = 0;
 let toastTimer = 0;
@@ -48,7 +49,7 @@ function renderTimer() {
   const [minutes, seconds] = formatTime(timer.remainingSeconds).split(':');
   els.mins.textContent = minutes;
   els.secs.textContent = seconds;
-  document.body.classList.toggle('last-minute', timer.running && timer.remainingSeconds <= 60);
+  document.body.classList.toggle('last-minute', isLastMinute(timer.remainingSeconds));
   els.action.textContent = timer.running ? 'Pause the water' : timer.remainingSeconds ? 'Start the water →' : 'Start again →';
   els.note.textContent = timer.remainingSeconds === 0 ? 'Time is up. Towel off with your best idea.' : timer.running ? (timer.remainingSeconds <= 60 ? 'Last minute — catch it before it disappears.' : 'The water is running. Keep listening.') : 'Choose a length, then begin.';
 }
@@ -68,17 +69,32 @@ function commitThoughts(nextThoughts) {
   return true;
 }
 
-function stopTimer() { clearInterval(interval); interval = 0; timer.running = false; }
+function stopTimer() {
+  clearInterval(interval);
+  interval = 0;
+  if (deadline) timer = { ...timer, remainingSeconds: remainingAt(deadline) };
+  deadline = 0;
+  timer.running = false;
+}
+
+function syncTimer() {
+  if (!timer.running || !deadline) return;
+  const remainingSeconds = remainingAt(deadline);
+  if (remainingSeconds === timer.remainingSeconds) return;
+  timer = { ...timer, remainingSeconds, running: remainingSeconds > 0 };
+  renderTimer();
+  if (!timer.running) { clearInterval(interval); interval = 0; deadline = 0; report('Shower complete — did a good one arrive?'); }
+}
+
+function advanceTimer() { syncTimer(); }
+
 function toggleTimer() {
   if (timer.remainingSeconds === 0) timer = makeTimer(timer.totalSeconds / 60);
   if (timer.running) stopTimer();
   else {
     timer.running = true;
-    interval = setInterval(() => {
-      timer = tick(timer);
-      renderTimer();
-      if (!timer.running) { stopTimer(); report('Shower complete — did a good one arrive?'); }
-    }, 1000);
+    deadline = Date.now() + timer.remainingSeconds * 1000;
+    interval = setInterval(advanceTimer, 1000);
   }
   renderTimer();
 }
@@ -111,6 +127,7 @@ function handleDurationClick(event) {
 /** @param {SubmitEvent} event */
 function handleSubmit(event) {
   event.preventDefault();
+  syncTimer();
   const text = els.input.value.trim();
   if (!text) { report('Write a thought before saving it.'); els.input.focus(); return; }
   /** @type {ShowerThought} */
