@@ -8,7 +8,7 @@ The project satisfies the Shower Thought Timer brief and remains within the sour
 
 | Check | Result |
 | --- | --- |
-| Raw source size excluding Markdown/text | **24,664 bytes**; below the 25 KB cap with 336 bytes remaining |
+| Raw source size excluding Markdown/text | **24,670 bytes**; below the 25 KB cap with 330 bytes remaining |
 | Strict type checking | `npx -y -p typescript tsc --project tsconfig.json` passes |
 | JavaScript syntax | `node --check app.js` passes |
 | Unit test suite | `node --test tests.mjs` passes |
@@ -86,6 +86,12 @@ The project satisfies the Shower Thought Timer brief and remains within the sour
 ### Defect found and fixed
 
 **Unbounded persisted IDs.** Stored thought IDs were safely escaped but only checked as strings. A manually corrupted archive could still inject an arbitrarily long ID into the delete control’s data and accessible-label attributes. Storage validation now rejects IDs longer than 100 characters; the unit test isolates and verifies this rejection.
+
+## Final state-consistency addendum
+
+### Defect found and fixed
+
+**Paused final-minute status contradicted the timer colour.** At `00:59` the timer correctly remained red, but the helper text reverted to “Choose a length, then begin.” because it tested `running` before the final-minute state. The final-minute condition now has priority, keeping the visible and screen-reader status accurate whether the timer is running or paused.
 
 ## Rubric assessment
 

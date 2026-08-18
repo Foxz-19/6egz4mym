@@ -51,7 +51,7 @@ function renderTimer() {
   els.secs.textContent = seconds;
   document.body.classList.toggle('last-minute', isLastMinute(timer.remainingSeconds));
   els.action.textContent = timer.running ? 'Pause the water' : timer.remainingSeconds ? 'Start the water →' : 'Start again →';
-  els.note.textContent = timer.remainingSeconds === 0 ? 'Time is up. Towel off with your best idea.' : timer.running ? (timer.remainingSeconds <= 60 ? 'Last minute — catch it before it disappears.' : 'The water is running. Keep listening.') : 'Choose a length, then begin.';
+  els.note.textContent = timer.remainingSeconds === 0 ? 'Time is up. Towel off with your best idea.' : isLastMinute(timer.remainingSeconds) ? 'Last minute — catch it before it disappears.' : timer.running ? 'The water is running. Keep listening.' : 'Choose a length, then begin.';
 }
 
 function renderThoughts() {
