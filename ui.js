@@ -30,6 +30,6 @@ export function formatCaptureTime(seconds) {
 /** @param {ShowerThought} thought @returns {HTMLLIElement} */
 export function createThoughtRow(thought) {
   const row = document.createElement('li');
-  row.innerHTML = `<p>${escapeText(thought.text)}</p><footer><time datetime="${thought.createdAt}">${formatDate(thought.createdAt)}</time><span>Captured ${formatCaptureTime(thought.elapsedSeconds)}</span><button type="button" data-delete="${escapeAttribute(thought.id)}" aria-label="Delete thought: ${escapeAttribute(thought.text)}">Delete</button></footer>`;
+  row.innerHTML = `<p>${escapeText(thought.text)}</p><footer><time datetime="${escapeAttribute(thought.createdAt)}">${formatDate(thought.createdAt)}</time><span>Captured ${formatCaptureTime(thought.elapsedSeconds)}</span><button type="button" data-delete="${escapeAttribute(thought.id)}" aria-label="Delete thought: ${escapeAttribute(thought.text)}">Delete</button></footer>`;
   return row;
 }

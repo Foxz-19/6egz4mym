@@ -8,7 +8,7 @@ The project satisfies the Shower Thought Timer brief and remains within the sour
 
 | Check | Result |
 | --- | --- |
-| Raw source size excluding Markdown/text | **24,670 bytes**; below the 25 KB cap with 330 bytes remaining |
+| Raw source size excluding Markdown/text | **24,687 bytes**; below the 25 KB cap with 313 bytes remaining |
 | Strict type checking | `npx -y -p typescript tsc --project tsconfig.json` passes |
 | JavaScript syntax | `node --check app.js` passes |
 | Unit test suite | `node --test tests.mjs` passes |
@@ -114,3 +114,8 @@ The project satisfies the Shower Thought Timer brief and remains within the sour
   }
 }
 ```
+## Attribute-safety addendum
+
+### Defect found and fixed
+
+**Timestamp attribute defense-in-depth.** The stored date was runtime-validated before rendering, but the `datetime` attribute was the sole persisted string not passed through the shared attribute escaper. It now uses the same escape path as the thought ID and accessible delete label.

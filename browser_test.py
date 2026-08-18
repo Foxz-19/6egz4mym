@@ -5,7 +5,7 @@ with sync_playwright() as p:
     page = browser.new_page(viewport={"width": 1280, "height": 900})
     errors = []
     page.on("pageerror", lambda error: errors.append(str(error)))
-    page.goto("http://127.0.0.1:4213", wait_until="networkidle")
+    page.goto("http://127.0.0.1:4215", wait_until="networkidle")
     page.emulate_media(reduced_motion="reduce")
     assert page.locator(".clock").evaluate("node => getComputedStyle(node).transitionDuration") != "0.3s"
     page.emulate_media(reduced_motion="no-preference")
